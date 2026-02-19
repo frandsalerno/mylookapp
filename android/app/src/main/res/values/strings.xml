@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MyLook</string>
+    <string name="title_activity_main">MyLook</string>
+    <string name="package_name">com.mylook.app</string>
+    <string name="custom_url_scheme">com.mylook.app</string>
+</resources>

@@ -1,0 +1,29 @@
+{
+  "name": "mylookapp",
+  "version": "1.0.0",
+  "description": "Mobile-first web app (wrapper-ready for Android) to: - Upload/store clothing, shoes, and accessories - Generate outfit suggestions by look type - Regenerate until accepted - Save accepted looks to history - Use season/weather/time context (with day/night override) - Call OpenAI API for smarter, up-to-date styling suggestions",
+  "main": "app.js",
+  "scripts": {
+    "build:web": "mkdir -p www && cp index.html styles.css app.js www/",
+    "cap:copy": "npm run build:web && npx cap copy android",
+    "cap:sync": "npm run build:web && npx cap sync android",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frandsalerno/mylookapp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/frandsalerno/mylookapp/issues"
+  },
+  "homepage": "https://github.com/frandsalerno/mylookapp#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0"
+  }
+}

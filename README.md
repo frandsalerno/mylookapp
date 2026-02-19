@@ -54,6 +54,9 @@ This app is now wired to Supabase using:
 
 Open Supabase SQL Editor and run `supabase/schema.sql`.
 
+If you already created the original tables before this feature update, run:
+- `supabase/migration_20260219_feature_pack.sql`
+
 ### 2) Create storage bucket
 
 In Supabase Storage, create a public bucket named `wardrobe-images`.
@@ -62,6 +65,7 @@ In Supabase Storage, create a public bucket named `wardrobe-images`.
 
 - Wardrobe items and history are synced to Supabase.
 - Uploaded images are stored in Supabase Storage.
+- App errors are logged in `public.app_logs`.
 - Existing local wardrobe/history are auto-migrated on first successful sync if remote tables are empty.
 - OpenAI API key remains local-only in browser storage.
 
