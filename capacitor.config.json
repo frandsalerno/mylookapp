@@ -1,5 +1,10 @@
 {
   "appId": "com.mylook.app",
   "appName": "MyLook",
-  "webDir": "www"
+  "webDir": "dist",
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": false
+    }
+  }
 }
