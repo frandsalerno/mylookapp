@@ -1,0 +1,80 @@
+-- MyLook Supabase schema (single-user MVP, no auth)
+-- Run in Supabase SQL Editor.
+
+create extension if not exists pgcrypto;
+
+create table if not exists public.wardrobe_items (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  category text not null check (category in ('tops', 'bottoms', 'outerwear', 'dresses', 'shoes', 'accessories')),
+  style_tags text[] not null default '{}',
+  season text not null check (season in ('all', 'spring', 'summer', 'autumn', 'winter')),
+  image_url text not null,
+  image_path text not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.history_entries (
+  id uuid primary key default gen_random_uuid(),
+  accepted_at timestamptz not null default now(),
+  look_type text not null,
+  outfit jsonb not null default '[]'::jsonb,
+  context_summary text not null default '',
+  created_at timestamptz not null default now()
+);
+
+alter table public.wardrobe_items enable row level security;
+alter table public.history_entries enable row level security;
+
+drop policy if exists "wardrobe_anon_all" on public.wardrobe_items;
+create policy "wardrobe_anon_all"
+on public.wardrobe_items
+for all
+to anon
+using (true)
+with check (true);
+
+drop policy if exists "history_anon_all" on public.history_entries;
+create policy "history_anon_all"
+on public.history_entries
+for all
+to anon
+using (true)
+with check (true);
+
+grant usage on schema public to anon;
+grant select, insert, update, delete on public.wardrobe_items to anon;
+grant select, insert, update, delete on public.history_entries to anon;
+
+insert into storage.buckets (id, name, public)
+values ('wardrobe-images', 'wardrobe-images', true)
+on conflict (id) do nothing;
+
+drop policy if exists "storage_anon_read" on storage.objects;
+create policy "storage_anon_read"
+on storage.objects
+for select
+to anon
+using (bucket_id = 'wardrobe-images');
+
+drop policy if exists "storage_anon_insert" on storage.objects;
+create policy "storage_anon_insert"
+on storage.objects
+for insert
+to anon
+with check (bucket_id = 'wardrobe-images');
+
+drop policy if exists "storage_anon_update" on storage.objects;
+create policy "storage_anon_update"
+on storage.objects
+for update
+to anon
+using (bucket_id = 'wardrobe-images')
+with check (bucket_id = 'wardrobe-images');
+
+drop policy if exists "storage_anon_delete" on storage.objects;
+create policy "storage_anon_delete"
+on storage.objects
+for delete
+to anon
+using (bucket_id = 'wardrobe-images');
