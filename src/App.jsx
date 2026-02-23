@@ -6,6 +6,7 @@ import {
   Camera,
   Check,
   CheckCircle2,
+  User,
   ChevronDown,
   ChevronUp,
   Clock3,
@@ -59,6 +60,7 @@ export function App() {
   const [theme, setTheme] = useState(readJson(STORAGE_KEYS.theme, 'light'));
 
   const [settings, setSettings] = useState(readJson(STORAGE_KEYS.settings, { apiKey: '', model: 'gpt-4.1-mini' }));
+  const [profile, setProfile] = useState(readJson(STORAGE_KEYS.profile, { gender: 'Prefer not to say' }));
   const [wardrobe, setWardrobe] = useState(readJson(STORAGE_KEYS.wardrobe, []));
   const [history, setHistory] = useState(readJson(STORAGE_KEYS.history, []));
   const [syncStatus, setSyncStatus] = useState('Supabase: connecting...');
@@ -108,6 +110,7 @@ export function App() {
   }, [theme]);
 
   useEffect(() => persist(STORAGE_KEYS.settings, settings), [settings]);
+  useEffect(() => persist(STORAGE_KEYS.profile, profile), [profile]);
   useEffect(() => persist(STORAGE_KEYS.wardrobe, wardrobe), [wardrobe]);
   useEffect(() => persist(STORAGE_KEYS.history, history), [history]);
 
@@ -471,8 +474,11 @@ export function App() {
               {
                 type: 'input_text',
                 text:
-                  'Choose one outfit from the wardrobe and return only JSON {"selectedItemIds":["..."],"reason":"..."}. Include shoes if available, use season/weather/time context. context=' +
-                  JSON.stringify({ lookType, ctx }) +
+                  'Choose one outfit from the wardrobe and return only JSON {"selectedItemIds":["..."],"reason":"..."}. ' +
+                  'Include shoes if available, use season/weather/time context, and explicitly incorporate the latest fashion trends for the user location. ' +
+                  'Use the user gender when selecting styles and trends. ' +
+                  'context=' +
+                  JSON.stringify({ lookType, ctx, gender: profile.gender, location: ctx.city }) +
                   ' wardrobe=' +
                   JSON.stringify(promptWardrobe),
               },
@@ -1002,6 +1008,23 @@ export function App() {
                     <span>{savedState ? 'Saved!' : 'Save API Settings'}</span>
                   </motion.button>
                 </AnimatePresence>
+              </section>
+
+              <section className="card section-card settings-card">
+                <div className="settings-head">
+                  <div className="settings-icon sage"><User /></div>
+                  <div>
+                    <h2>Profile</h2>
+                    <p className="micro-muted">Used to tailor style suggestions</p>
+                  </div>
+                </div>
+                <label>Gender</label>
+                <select value={profile.gender} onChange={(e) => setProfile((p) => ({ ...p, gender: e.target.value }))}>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Non-binary/Neutral">Non-binary/Neutral</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
               </section>
 
               <section className="card section-card sync-card">

@@ -7,6 +7,7 @@ export const STORAGE_KEYS = {
   history: 'mylook.history',
   settings: 'mylook.settings',
   theme: 'mylook.theme',
+  profile: 'mylook.profile',
 };
 
 export const PREDEFINED_LOOKS = [
