@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BrainCircuit,
@@ -36,6 +36,7 @@ import {
   fileToDataUrl,
   guessExtensionFromDataUrl,
   inferSeason,
+  inferSeasonByLat,
   inferTimeOfDay,
   newId,
   randomPick,
@@ -84,9 +85,11 @@ export function App() {
   const [itemStyle, setItemStyle] = useState('');
   const [itemSeason, setItemSeason] = useState('all');
   const [itemFile, setItemFile] = useState(null);
+  const [isSavingItem, setIsSavingItem] = useState(false);
   const [pendingItemImageData, setPendingItemImageData] = useState('');
   const [aiItemStatus, setAiItemStatus] = useState('');
   const [aiSuggestion, setAiSuggestion] = useState(null);
+  const fileInputRef = useRef(null);
 
   const [wardrobeSearch, setWardrobeSearch] = useState('');
   const [wardrobeCategoryFilter, setWardrobeCategoryFilter] = useState('all');
@@ -249,7 +252,7 @@ export function App() {
 
       setContext({
         city,
-        season: inferSeason(new Date().getMonth() + 1),
+        season: inferSeasonByLat(new Date().getMonth() + 1, lat),
         weatherLabel: weatherCodeToLabel(weatherPayload?.current?.weather_code),
         temperatureC: typeof weatherPayload?.current?.temperature_2m === 'number' ? weatherPayload.current.temperature_2m : null,
         timeOfDay: inferTimeOfDay(new Date().getHours()),
@@ -361,7 +364,8 @@ export function App() {
 
   async function addWardrobeItem(e) {
     e.preventDefault();
-    if (!itemFile) return;
+    if (!itemFile || isSavingItem) return;
+    setIsSavingItem(true);
     try {
       const imageData = await getSelectedItemImageData();
       const uploaded = await uploadImageDataToSupabase(imageData);
@@ -416,10 +420,13 @@ export function App() {
       setItemStyle('');
       setItemSeason('all');
       setAiSuggestion(null);
-      setAiItemStatus('Saved.');
+      setAiItemStatus('Saved. You can add another item.');
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (e2) {
       logError('wardrobe_insert_failed', e2);
       setAiItemStatus('Save failed: ' + e2.message);
+    } finally {
+      setIsSavingItem(false);
     }
   }
 
@@ -732,7 +739,8 @@ export function App() {
                     <div className="outfit-grid">
                       {suggestion.outfit.map((item, idx) => (
                         <motion.div key={item.id} className="outfit-item press-scale" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.04 }}>
-                          <img src={item.imageUrl} alt={item.name} />
+                          <img src={item.imageUrl || wardrobe.find((w) => w.id === item.id)?.imageUrl || ''} alt={item.name} />
+                          <div className="category">{item.category}</div>
                           <div className="caption">{item.name}</div>
                         </motion.div>
                       ))}
@@ -780,6 +788,7 @@ export function App() {
                       <div className="add-item-head">
                         <label className="photo-picker press-scale">
                           <input
+                            ref={fileInputRef}
                             type="file"
                             accept="image/*"
                             capture="environment"
@@ -821,7 +830,9 @@ export function App() {
                       <button type="button" className="outline-btn press-scale" onClick={analyzeItemWithAI}>
                         <Sparkles size={16} />Analyze Photo with AI
                       </button>
-                      <button type="submit" className="primary press-scale glow-primary">Save To Wardrobe</button>
+                      <button type="submit" className="primary press-scale glow-primary" disabled={isSavingItem}>
+                        {isSavingItem ? 'Saving...' : 'Save To Wardrobe'}
+                      </button>
                       <p className="micro-muted">{aiItemStatus}</p>
                       {aiSuggestion && (
                         <div className="suggestion-block">

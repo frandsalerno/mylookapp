@@ -10,6 +10,19 @@ export function inferSeason(month) {
   return 'autumn';
 }
 
+export function inferSeasonByLat(month, lat) {
+  const base = inferSeason(month);
+  if (typeof lat !== 'number') return base;
+  if (lat >= 0) return base;
+  const invert = {
+    winter: 'summer',
+    spring: 'autumn',
+    summer: 'winter',
+    autumn: 'spring',
+  };
+  return invert[base] || base;
+}
+
 export function inferTimeOfDay(hour) {
   return hour >= 6 && hour < 19 ? 'day' : 'night';
 }
